@@ -1,0 +1,59 @@
+﻿@page "/push"
+@inject DataSyncService DataSyncService
+@inject IJSRuntime JSRuntime
+
+@using Newtonsoft.Json;
+
+<PageTitle>Push</PageTitle>
+
+<h1>Abonnieren von Push-Benachrichtigungen</h1>
+<div id="GiveAccess">
+    Aufforderung zur Erlaubnis von Push-Benachrichtigungen
+    <button id="PromptForAccessBtn" @onclick="promtIt">Prompt </button>
+</div>
+<div>
+    <button id="subscribe" @onclick="subscribe">Abonnieren</button><br />
+</div>
+<div>
+    <button id="unsubscribe" @onclick="unsubscribe">Deabonnieren</button><br />
+</div>
+<p> @printResult </p>
+
+@code {
+    private string printResult = " ";
+
+    private async Task subscribe()
+    {
+        try
+        {
+            var result = await JSRuntime.InvokeAsync<bool>("requestPushSubscription");
+            if (result)
+            {
+                printResult = "Abo erfolgreich";
+                StateHasChanged();
+            }
+            else
+            {
+                printResult = "Abo fehlgeschlagen";
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+
+    }
+
+    private async Task unsubscribe()
+    {
+        await JSRuntime.InvokeVoidAsync("deletePushSubscription");
+        printResult = "Abo beendet";
+        StateHasChanged();
+    }
+
+    private async Task promtIt()
+    {
+        await JSRuntime.InvokeVoidAsync("notifyMe");
+    }
+}

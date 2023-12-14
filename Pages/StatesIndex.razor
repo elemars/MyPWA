@@ -1,0 +1,79 @@
+﻿@page "/statesindex"
+@inject DataSyncService DataSyncService
+
+<PageTitle>Ereignisübersicht</PageTitle>
+
+<h3>Ereignisübersicht</h3>
+
+@if (DataSyncService.States == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Zeitpunkt</th>
+                <th>Status</th>
+                <th>Geräte-ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var state in DataSyncService.States)
+            {
+                <tr>
+                    <td>@state.Timestamp.ToString()</td>
+                    <td>@state.Statevalue</td>
+                    <td>@state.Deviceid</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    protected override async void OnInitialized()
+    {
+        await Task.Run(() =>
+
+            DataSyncService.OnChange += StateHasChanged
+        );
+    }
+
+    // public void Dispose()
+    // {
+    //     DataSyncService.OnChange -= StateHasChanged;
+    // }
+    // 
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     PeriodicExecutor.JobExecuted += HandleJobExecuted;
+    //     await PeriodicExecutor.ExecuteAsync();
+    // }
+    // void HandleJobExecuted(object sender, JobExecutedEventArgs e)
+    // {
+    //     try
+    //     {
+    //         _states = e.States;
+    //         StateHasChanged();
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         Console.WriteLine(ex.Message);
+    //     }
+    //     //Dispose();
+    //     PeriodicExecutor.Dispose();
+    // }
+    // public void Dispose()
+    // {
+    //     PeriodicExecutor.JobExecuted -= HandleJobExecuted;
+    // }
+    // protected override async Task OnParametersSetAsync()
+    // {
+    //     //PeriodicExecutor.JobExecuted += HandleJobExecuted;
+    //     await PeriodicExecutor.ExecuteAsync();
+    // }
+}

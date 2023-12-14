@@ -1,0 +1,39 @@
+﻿@page "/register"
+@using System.Text.Json
+@using MyPWA.Shared
+@using System.Net.Http.Headers;
+@using System.Diagnostics;
+
+@inject HttpClient Http
+@inject IJSRuntime JSRuntime
+@inject User User
+
+<head>
+    <title>Registrierung</title>
+</head>
+<body>
+    <h2>Registrierungsformular</h2>
+
+    <form id="registerForm">
+        <label for="username">Benutzername:</label><br>
+        <input type="text" id="username" name="username" required><br>
+
+        <label for="password">Passwort:</label><br>
+        <input type="password" id="password" name="password" required><br>
+
+        <label for="role">Rolle (max 5 Zeichen):</label><br>
+        <input type="text" id="role" name="role" maxlength="5" required><br>
+
+        <label for="uid">UID NFC-Tag (max 24 Zeichen, optional):</label><br>
+        <input type="text" id="uid" name="uid" maxlength="24"><br>
+
+        <input type="button" value="Registrieren" @onclick="RegisterUser">
+    </form>
+</body>
+
+@code {
+    private async Task RegisterUser()
+    {
+        await JSRuntime.InvokeVoidAsync("registerUser");
+    }
+}

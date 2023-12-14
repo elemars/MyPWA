@@ -1,0 +1,56 @@
+﻿@page "/adddevice"
+
+@inject IJSRuntime JSRuntime
+
+@using MyPWA.Services;
+
+<h3>Gerät hinzufügen</h3>
+
+<form>
+    <label for="Location">Raum: </label><br />
+    <input type="text" id="Location" name="Raum" maxlength="30" @bind="Location"/><br />
+    <label for="Name">Fenster von Links: </label><br />
+    <input type="text" id="Name" name="Fenster" maxlength="45" @bind="Name"/><br />
+    <label for="macAdresse">MAC-Adresse </label><br />
+    <input type="text" id="macAdresse" name="MAC-Adresse" maxlength="17" @bind="macAdresse"/><br />
+    <button type="button" @onclick="AddNewDevice">Neues Gerät hinzufügen</button>
+    <br>
+    <br>
+    <p>@meldung</p>
+</form>
+
+@code {
+    private String Location;
+    private String Name;
+    private String macAdresse;
+    private string meldung="   ";
+    private async Task AddNewDevice()
+    {
+        try
+        {
+            if (Location != null && Name != null && macAdresse != null)
+            {
+                Device NewDevice = new();
+                NewDevice.Batterylevel = (decimal)5.0;
+                NewDevice.Location = Location;
+                NewDevice.Macadress = macAdresse;
+                NewDevice.Name = Name;
+                NewDevice.Laststate = StateValue.offline;
+
+                var result = await JSRuntime.InvokeAsync<bool>("JSAddNewDevice", NewDevice);
+                if(result == true)
+                {
+                    meldung = "Neues Gerät erfolgreich hinzugefügt";
+                }else
+                {
+                    meldung = "Hinzufügen des Gerätes fehlgeschlagen!";
+                }
+            }
+
+        }catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+}

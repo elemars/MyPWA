@@ -1,0 +1,98 @@
+﻿@page "/devicesindex"
+@inject DataSyncService DataSyncService
+
+
+<PageTitle>Geräteübersicht</PageTitle>
+
+<h3>Geräteübersicht</h3>
+
+<a href="/adddevice">Gerät hinzufügen</a>
+
+@if (DataSyncService.DisplaydDevices == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    @if (true)
+    {
+        <form>
+            <p>
+                Raum:
+                <select id="FilterLocation" @bind="DeviceLocation">
+                    <option value="">Alle</option>
+                    @foreach (var location in DataSyncService.Locations)
+                    {
+                        <option value="@location">@location</option>
+                    }
+                </select>
+                Fensternummer: <input type="text" id="FilterName" @bind="SearchString" />
+                <button type="button" @onclick="Filter">Filtern</button>
+            </p>
+        </form>
+    }
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Raum</th>
+                <th>Fenster Nr.</th>
+                <th>Batteriespannung</th>
+                <th>MAC-Adresse</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var device in DataSyncService.Devices)
+            {
+                <tr>
+                    <td>@device.Location</td>
+                    <td>@device.Name</td>
+                    <td style="@StyleForNumber(device.Batterylevel)">@device.Batterylevel</td>
+                    <td>@device.Macadress</td>
+                    <td style="@StyleForState(device.Laststate)">@device.Laststate</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    public string? SearchString { get; set; }
+    public string? DeviceLocation { get; set; }
+    private static bool firstRun = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if(firstRun)
+        {
+            await DataSyncService.Filter("","");
+            firstRun = false;
+        }
+
+        StateHasChanged();
+    }
+    private string StyleForNumber(decimal? number)
+    {
+        if (number <= (decimal)3.3)
+            return "background-color:red";
+        else if (number <= (decimal)3.6)
+            return "background-color:orange";
+        else
+            return "background-color:green";
+    }
+    private string StyleForState(StateValue value)
+    {
+        if (value == StateValue.offline)
+            return "background-color:red";
+        else if (value == StateValue.verschlossen)
+            return "background-color:green";
+        else
+            return "background-color:orange";
+    }
+    private async void Filter()
+    {
+        await DataSyncService.Filter(SearchString, DeviceLocation);
+    }
+}

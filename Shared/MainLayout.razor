@@ -1,0 +1,57 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+@inject DataSyncService DataSyncService
+@inject AuthenticationService authService;
+
+@using Microsoft.AspNetCore.Components.Forms;
+@using System.Reflection.Metadata;
+@using System.Diagnostics;
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+    <main>
+        <div class="top-row px-4">
+            @if (authService.IsLoggedIn)
+            {
+                <label class="switchAlarm" title="Alarm scharf stellen">
+                    <input type="checkbox" id="checkbox" @bind-value="IsChecked" @bind-value:after="SendRequest">
+                    <span class="slider round @(IsChecked ? "checked" : "unchecked")"></span>
+                </label>
+                <button class="custom-button" @onclick="CallFetchData" title="Daten abrufen">
+                    <i class="fa fa-refresh"></i>
+                </button>
+            }
+        </div>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    public bool IsChecked { get; set; }
+
+    private async Task SendRequest()
+    {
+        await JSRuntime.InvokeVoidAsync("sendDataToServer", IsChecked);
+    }
+    private async Task CallFetchData()
+    {
+        await DataSyncService.InitializeAsync();
+        await JSRuntime.InvokeVoidAsync("navigator.serviceWorker.controller.postMessage", "fetchData");
+        IsChecked = await JSRuntime.InvokeAsync<bool>("getAlertDataFromServer");
+        StateHasChanged();
+    }
+    private async Task SetAlarmSwitchToServerValue()
+    {
+        IsChecked = await JSRuntime.InvokeAsync<bool>("getAlertDataFromServer");
+        StateHasChanged();
+    }
+}
